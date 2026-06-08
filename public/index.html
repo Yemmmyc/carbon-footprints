@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Carbon Footprint Awareness Platform: calculate, track, and reduce your daily carbon emissions with personalized insights and gamified green habits.">
+  <title>EcoPulse | Carbon Footprint Tracker & Awareness Platform</title>
+  
+  <!-- Modern Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- App Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  
+  <!-- Premium Glass Background Elements -->
+  <div class="blob-bg blob-1"></div>
+  <div class="blob-bg blob-2"></div>
+  <div class="blob-bg blob-3"></div>
+
+  <!-- Main Container -->
+  <div class="app-container">
+    
+    <!-- Top Navigation Bar -->
+    <header class="app-header">
+      <div class="logo">
+        <div class="logo-icon">
+          <i class="fa-solid fa-leaf"></i>
+        </div>
+        <div class="logo-text">
+          <h1>EcoPulse</h1>
+          <span>Carbon Footprint Awareness</span>
+        </div>
+      </div>
+      
+      <div class="header-actions">
+        <div class="streak-badge" id="streak-container" title="Daily streak of eco-actions!">
+          <i class="fa-solid fa-fire"></i>
+          <span id="streak-count">0</span> Day Streak
+        </div>
+        <div class="points-badge" id="points-container" title="Total Eco-Points earned">
+          <i class="fa-solid fa-award"></i>
+          <span id="total-points">0</span> Points
+        </div>
+      </div>
+    </header>
+
+    <!-- Dashboard Grid Layout -->
+    <main class="dashboard-grid">
+      
+      <!-- COLUMN 1: Inputs & Calculators -->
+      <section class="grid-card col-inputs">
+        <div class="card-header">
+          <h2><i class="fa-solid fa-sliders"></i> Emission Estimator</h2>
+          <p>Update your habits to recalculate your carbon impact in real-time.</p>
+        </div>
+        
+        <div class="tabs-container">
+          <button class="tab-btn active" data-tab="tab-transit" id="btn-tab-transit">
+            <i class="fa-solid fa-car"></i> Transport
+          </button>
+          <button class="tab-btn" data-tab="tab-energy" id="btn-tab-energy">
+            <i class="fa-solid fa-bolt"></i> Home Energy
+          </button>
+          <button class="tab-btn" data-tab="tab-lifestyle" id="btn-tab-lifestyle">
+            <i class="fa-solid fa-basket-shopping"></i> Diet & Lifestyle
+          </button>
+        </div>
+
+        <!-- Calculator Forms -->
+        <div class="calculator-forms">
+          
+          <!-- TAB 1: Transportation -->
+          <div class="tab-panel active" id="tab-transit">
+            <div class="input-group">
+              <label for="input-drive-miles">Weekly Car Mileage (miles)</label>
+              <div class="slider-wrapper">
+                <input type="range" id="input-drive-miles" min="0" max="500" value="120" class="styled-range">
+                <span class="range-value" id="val-drive-miles">120</span>
+              </div>
+            </div>
+            
+            <div class="input-group">
+              <label for="select-car-type">Car Fuel / Efficiency Type</label>
+              <select id="select-car-type" class="styled-select">
+                <option value="medium-petrol">Medium Petrol Car (~35 MPG)</option>
+                <option value="large-petrol">Large Petrol SUV (~20 MPG)</option>
+                <option value="hybrid">Hybrid Vehicle</option>
+                <option value="electric">Electric Vehicle (EV)</option>
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label for="input-transit-hours">Weekly Public Transit (hours)</label>
+              <div class="slider-wrapper">
+                <input type="range" id="input-transit-hours" min="0" max="30" value="4" class="styled-range">
+                <span class="range-value" id="val-transit-hours">4</span>
+              </div>
+            </div>
+
+            <div class="input-group">
+              <label for="input-flights-year">Annual Flights (short & long-haul)</label>
+              <div class="slider-wrapper">
+                <input type="range" id="input-flights-year" min="0" max="15" value="2" class="styled-range">
+                <span class="range-value" id="val-flights-year">2</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 2: Home Energy -->
+          <div class="tab-panel" id="tab-energy">
+            <div class="input-group">
+              <label for="input-electricity">Monthly Electricity Bill ($)</label>
+              <div class="slider-wrapper">
+                <input type="range" id="input-electricity" min="0" max="300" value="80" class="styled-range">
+                <span class="range-value" id="val-electricity">$80</span>
+              </div>
+            </div>
+
+            <div class="input-group">
+              <label for="select-energy-source">Electricity Source / Grid Blend</label>
+              <select id="select-energy-source" class="styled-select">
+                <option value="standard">Standard Grid Mix</option>
+                <option value="green-50">50% Renewable / Green Option</option>
+                <option value="green-100">100% Renewable / Rooftop Solar</option>
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label for="input-gas">Monthly Natural Gas Bill ($)</label>
+              <div class="slider-wrapper">
+                <input type="range" id="input-gas" min="0" max="200" value="50" class="styled-range">
+                <span class="range-value" id="val-gas">$50</span>
+              </div>
+            </div>
+
+            <div class="input-group">
+              <label for="select-home-size">Home Size / Household Count</label>
+              <select id="select-home-size" class="styled-select">
+                <option value="1">1 Person (Studio/Apartment)</option>
+                <option value="2" selected>2-3 People (Mid-size Home)</option>
+                <option value="4">4+ People (Large House)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- TAB 3: Diet & Lifestyle -->
+          <div class="tab-panel" id="tab-lifestyle">
+            <div class="input-group">
+              <label for="select-diet">Primary Dietary Habits</label>
+              <select id="select-diet" class="styled-select">
+                <option value="heavy-meat">Meat Lover (Daily red meat)</option>
+                <option value="medium-meat" selected>Average Meat Eater (Mixed)</option>
+                <option value="vegetarian">Vegetarian (No meat, consumes dairy)</option>
+                <option value="vegan">Vegan (100% plant-based)</option>
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label for="select-waste">Weekly Household Waste Generation</label>
+              <select id="select-waste" class="styled-select">
+                <option value="high">High (No sorting or recycling)</option>
+                <option value="medium" selected>Average (Recycle plastic/paper)</option>
+                <option value="low">Minimal (Zero waste / Compost & Recycle)</option>
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label for="input-shopping">Monthly Non-essential Shopping Spend ($)</label>
+              <div class="slider-wrapper">
+                <input type="range" id="input-shopping" min="0" max="1000" value="150" class="styled-range">
+                <span class="range-value" id="val-shopping">$150</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- COLUMN 2: Analytics & Summary -->
+      <section class="grid-card col-analytics">
+        <div class="card-header">
+          <h2><i class="fa-solid fa-chart-pie"></i> Your Footprint Impact</h2>
+          <p>Calculated dynamic emissions and equivalent comparisons.</p>
+        </div>
+
+        <div class="analytics-content">
+          <!-- Total Score Gauge -->
+          <div class="gauge-section">
+            <div class="circular-chart-container">
+              <svg viewBox="0 0 36 36" class="circular-chart green">
+                <path class="circle-bg"
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                />
+                <path class="circle" id="gauge-progress"
+                  stroke-dasharray="0, 100"
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                />
+              </svg>
+              <div class="gauge-labels">
+                <span class="gauge-number" id="lbl-total-co2">0.0</span>
+                <span class="gauge-unit">Tons CO₂e / Year</span>
+              </div>
+            </div>
+            
+            <div class="rating-badge" id="co2-rating">Calculating...</div>
+          </div>
+
+          <!-- Category Breakdown Progress Bars -->
+          <div class="breakdown-section">
+            <div class="breakdown-bar-item">
+              <div class="bar-info">
+                <span><i class="fa-solid fa-car-side"></i> Transport</span>
+                <span id="lbl-breakdown-transit">0.0 T</span>
+              </div>
+              <div class="bar-track">
+                <div class="bar-fill transit-fill" id="fill-breakdown-transit" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <div class="breakdown-bar-item">
+              <div class="bar-info">
+                <span><i class="fa-solid fa-house"></i> Home Energy</span>
+                <span id="lbl-breakdown-energy">0.0 T</span>
+              </div>
+              <div class="bar-track">
+                <div class="bar-fill energy-fill" id="fill-breakdown-energy" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <div class="breakdown-bar-item">
+              <div class="bar-info">
+                <span><i class="fa-solid fa-apple-whole"></i> Lifestyle</span>
+                <span id="lbl-breakdown-lifestyle">0.0 T</span>
+              </div>
+              <div class="bar-track">
+                <div class="bar-fill lifestyle-fill" id="fill-breakdown-lifestyle" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Real World Equivalents -->
+          <div class="equivalents-grid">
+            <div class="eq-card">
+              <div class="eq-icon"><i class="fa-solid fa-tree"></i></div>
+              <div class="eq-text">
+                <span class="eq-num" id="lbl-eq-trees">0</span>
+                <span class="eq-desc">Trees needed to offset</span>
+              </div>
+            </div>
+            <div class="eq-card">
+              <div class="eq-icon"><i class="fa-solid fa-gas-pump"></i></div>
+              <div class="eq-text">
+                <span class="eq-num" id="lbl-eq-gasoline">0</span>
+                <span class="eq-desc">Gals of gasoline burned</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- COLUMN 3: Personalized Action Plan -->
+      <section class="grid-card col-actions">
+        <div class="card-header">
+          <h2><i class="fa-solid fa-circle-check"></i> Action Checklist</h2>
+          <p>Commit to these simple habits and see your potential reduction!</p>
+        </div>
+
+        <div class="action-plan-content">
+          <div class="potential-saving-card">
+            <div class="saving-header">Potential Reduction:</div>
+            <div class="saving-amount"><span id="lbl-potential-saving">0.0</span> Tons CO₂e saved</div>
+          </div>
+
+          <div class="action-list" id="action-list-container">
+            <!-- Dynamically populated action items -->
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Ledger Section: Track daily green acts -->
+    <section class="ledger-section grid-card">
+      <div class="card-header ledger-header-layout">
+        <div>
+          <h2><i class="fa-solid fa-book-open"></i> Daily Green Ledger</h2>
+          <p>Record your eco-friendly actions today to earn Eco-Points and build your streak.</p>
+        </div>
+        <button class="btn-primary" id="btn-add-action-modal">
+          <i class="fa-solid fa-plus"></i> Record Action
+        </button>
+      </div>
+
+      <!-- Ledger Table -->
+      <div class="ledger-table-container">
+        <table class="ledger-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Action Details</th>
+              <th>Category</th>
+              <th>Carbon Prevented</th>
+              <th>Points Earned</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="ledger-body">
+            <!-- Dynamic entries loaded here -->
+            <tr class="empty-state-row" id="ledger-empty-state">
+              <td colspan="6">
+                <div class="empty-state">
+                  <i class="fa-regular fa-folder-open"></i>
+                  <p>Your ledger is empty. Log a green action to start tracking!</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="app-footer">
+      <p>&copy; 2026 EcoPulse Platform. Designed to promote environmental awareness and micro-habits.</p>
+      <div class="footer-links">
+        <a href="https://github.com" target="_blank"><i class="fa-brands fa-github"></i> Repository</a>
+        <a href="https://linkedin.com" target="_blank"><i class="fa-brands fa-linkedin"></i> Build Journey</a>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- Record Action Dialog (Modal) -->
+  <div class="modal-overlay" id="action-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Record Eco-Action</h3>
+        <button class="close-btn" id="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="action-form">
+        <div class="input-group">
+          <label for="select-action-template">Choose Action Type</label>
+          <select id="select-action-template" class="styled-select" required>
+            <option value="" disabled selected>Select an action...</option>
+            <option value="commute" data-points="15" data-offset="3.2">Commuted via Public Transit (Avoided Car)</option>
+            <option value="bike" data-points="25" data-offset="5.5">Biked/Walked to Work/Store</option>
+            <option value="diet" data-points="10" data-offset="2.1">Ate completely plant-based today</option>
+            <option value="energy" data-points="10" data-offset="1.8">Turned thermostat down/off for 4 hours</option>
+            <option value="recycle" data-points="5" data-offset="0.5">Recycled / Sorted household waste</option>
+            <option value="reusable" data-points="5" data-offset="0.2">Used reusable shopping bags and cup</option>
+            <option value="custom" data-points="10" data-offset="1.0">Custom Green Action</option>
+          </select>
+        </div>
+
+        <div id="custom-action-fields" style="display: none;">
+          <div class="input-group">
+            <label for="input-custom-name">Action Description</label>
+            <input type="text" id="input-custom-name" placeholder="e.g. Composted kitchen scraps" class="styled-input">
+          </div>
+          <div class="form-row">
+            <div class="input-group col-half">
+              <label for="input-custom-points">Eco-Points</label>
+              <input type="number" id="input-custom-points" min="1" max="100" value="10" class="styled-input">
+            </div>
+            <div class="input-group col-half">
+              <label for="input-custom-offset">CO₂ Saved (kg)</label>
+              <input type="number" id="input-custom-offset" min="0.1" max="50" step="0.1" value="1.0" class="styled-input">
+            </div>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="input-action-date">Date of Action</label>
+          <input type="date" id="input-action-date" class="styled-input" required>
+        </div>
+
+        <button type="submit" class="btn-primary btn-block">Log to Ledger</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- App Script -->
+  <script src="app.js"></script>
+</body>
+</html>
