@@ -2,6 +2,8 @@
 
 EcoPulse is a state-of-the-art, highly interactive single-page application (SPA) designed to empower individuals to understand, track, and reduce their carbon footprint. By combining real-time calculations with personalized recommendations and gamified habit building, EcoPulse turns complex environmental science into actionable micro-habits.
 
+---
+
 ## 🎯 Chosen Challenge Vertical
 **The Everyday Eco-Conscious Citizen**
 This solution is tailored for urban and suburban individuals who want to balance transport, household utility bills, diet choices, and shopping habits to decrease their net carbon impact. 
@@ -17,6 +19,22 @@ EcoPulse is built on a responsive, serverless, front-end architecture designed f
     *   **Action Checklist**: Users commit to mid-to-long-term habit adjustments and see potential annual CO₂e reductions in real-time.
     *   **Daily Green Ledger**: A logbook where users record daily eco-actions, earn "Eco-Points," and build a daily streak.
 *   **Local Persistence**: All settings, committed actions, and ledger entries are synchronized with `localStorage` so user data persists across page refreshes.
+
+---
+
+## 📂 Project Directory Structure
+
+Here is a map of the codebase repository files and their roles:
+
+```text
+carbon-footprints/
+├── public/
+│   ├── index.html     # Semantic HTML5 Structure, Modal Dialogs & SEO tags
+│   ├── style.css      # Custom CSS variables, Glassmorphism, Animations, Gradients
+│   └── app.js         # Reactive Math Engine, State management, localStorage link
+├── firebase.json      # Google Cloud / Firebase Hosting configuration map
+└── README.md          # Comprehensive Project and Submission Documentation
+```
 
 ---
 
@@ -65,20 +83,68 @@ $$\text{Natural Gas CO}_2\text{ (Tons)} = \frac{(\text{Monthly Bill} \times 12 \
 
 ---
 
-## 🚀 How to Run Locally
+## ⚙️ Step-by-Step Local Setup Guide
 
+Follow these instructions to run the application locally on your system:
+
+### Prerequisites
+*   [Node.js](https://nodejs.org/) (version 16 or higher recommended)
+*   [Git](https://git-scm.com/) installed
+
+### Steps
 1.  **Clone the Repository**:
     ```bash
-    git clone <YOUR_PUBLIC_REPOSITORY_LINK>
+    git clone https://github.com/Yemmmyc/carbon-footprints.git
     cd carbon-footprints
     ```
-2.  **Run with Local Dev Server**:
-    Use any basic HTTP server. For example, using Python:
+2.  **Launch a Local Server**:
+    Since the application uses standard modules and frontend files, you can launch it with any local server tool.
+    *   **Using Node's http-server** (Recommended):
+        ```bash
+        npx http-server public -p 8080
+        ```
+    *   **Using Python**:
+        ```bash
+        python -m http.server 8080 --directory public
+        ```
+3.  **Access the App**:
+    Open [http://localhost:8080](http://localhost:8080) in your web browser.
+
+---
+
+## ☁️ Step-by-Step Google Cloud (Firebase) Deployment Guide
+
+This application is set up to deploy serverless to Google Cloud using Firebase Hosting:
+
+1.  **Install Firebase CLI**:
     ```bash
-    python -m http.server 8000
+    npm install -g firebase-tools
     ```
-    Or Node.js `http-server`:
+2.  **Log In to Google/Firebase Account**:
     ```bash
-    npx http-server public
+    firebase login
     ```
-3.  Open `http://localhost:8000` in your web browser.
+    *(This opens a browser window where you can authenticate with your Google credentials).*
+3.  **Link the Directory to Your Project**:
+    Ensure you have created a project named `carbon-footprints` in the [Firebase Console](https://console.firebase.google.com/). Then associate it:
+    ```bash
+    firebase use --add carbon-footprints-bff68
+    ```
+4.  **Deploy Live**:
+    ```bash
+    firebase deploy
+    ```
+5.  **Live Subdomain**:
+    Firebase will return a public deployment link, e.g.:
+    **`https://carbon-footprints-bff68.web.app`**
+
+---
+
+## 🏆 Challenge Expectations Checklist
+
+| Feature Expectation | Implementation Details | Outcome / Verification |
+| :--- | :--- | :--- |
+| **Smart Dynamic Assistant** | State metrics adjust dynamically based on committed checklists and logs. | Dynamic update of total carbon metrics and environmental equivalents. |
+| **Context-based Decisions** | Real-time calculations react instantly to slider inputs and dropdown habits. | Specific warning ratings (Low/Moderate/High impact) display based on threshold scoring. |
+| **Clean Maintainable Code** | Complete modular styling decoupled from semantic structure and JavaScript state logic. | Clean separation: `index.html`, `style.css`, and `app.js`. |
+| **Usability & UX** | Glassmorphic visual cards, dark mode, responsive mobile support, and localStorage caching. | Data remains intact after refresh, providing a seamless user experience. |
