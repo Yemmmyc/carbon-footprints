@@ -42,14 +42,16 @@ const RECOMMENDATIONS = [
 // ==========================================
 // Initialization & Startup
 // ==========================================
-document.addEventListener('DOMContentLoaded', () => {
-  loadState();
-  injectSvgGradients();
-  setupEventListeners();
-  renderRecommendations();
-  calculateEmissions();
-  renderLedger();
-});
+if (typeof document !== 'undefined') {
+  document.addEventListener('DOMContentLoaded', () => {
+    loadState();
+    injectSvgGradients();
+    setupEventListeners();
+    renderRecommendations();
+    calculateEmissions();
+    renderLedger();
+  });
+}
 
 // Load state from LocalStorage
 function loadState() {
@@ -86,12 +88,19 @@ function loadState() {
   }
 }
 
-// Save state to LocalStorage
+// Save state to LocalStorage (debounced to optimize performance)
+let saveTimeout;
 function saveState() {
-  localStorage.setItem('ecopulse_state', JSON.stringify(state));
-  // Update header widgets
-  document.getElementById('total-points').textContent = state.points;
-  document.getElementById('streak-count').textContent = state.streak;
+  // Update header widgets immediately for UI responsiveness
+  const totalPointsEl = document.getElementById('total-points');
+  const streakCountEl = document.getElementById('streak-count');
+  if (totalPointsEl) totalPointsEl.textContent = state.points;
+  if (streakCountEl) streakCountEl.textContent = state.streak;
+
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(() => {
+    localStorage.setItem('ecopulse_state', JSON.stringify(state));
+  }, 250);
 }
 
 // Dynamically inject the SVG color gradient definition
@@ -110,64 +119,72 @@ function injectSvgGradients() {
 }
 
 // ==========================================
-// Calculation Engine
+// Calculation Engine (Pure Math Functions)
 // ==========================================
-function calculateEmissions() {
-  const i = state.inputs;
 
-  // 1. TRANSPORT CALCULATION (Annual Tons CO2e)
-  // Car travel: annual miles = weekly * 52. Modified by fuel/efficiency standard
+function calculateTransportEmissions(driveMiles, carType, transitHours, flightsYear) {
   let carModifier = 1.0;
-  if (i.carType === 'large-petrol') carModifier = 1.35;
-  if (i.carType === 'hybrid') carModifier = 0.45;
-  if (i.carType === 'electric') carModifier = 0.15;
+  if (carType === 'large-petrol') carModifier = 1.35;
+  if (carType === 'hybrid') carModifier = 0.45;
+  if (carType === 'electric') carModifier = 0.15;
   
-  const annualCarMiles = i.driveMiles * 52;
-  const carCO2Kg = annualCarMiles * 0.38 * carModifier; // 0.38kg CO2 per mile base
+  const annualCarMiles = driveMiles * 52;
+  const carCO2Kg = annualCarMiles * 0.38 * carModifier;
 
-  // Public Transit: weekly hours * average speed 25mph * 52 weeks * 0.1kg CO2/mile
-  const annualTransitMiles = i.transitHours * 25 * 52;
+  const annualTransitMiles = transitHours * 25 * 52;
   const transitCO2Kg = annualTransitMiles * 0.08;
 
-  // Flights: average flight takes 2.5 hours and produces ~0.35 Tons (350kg) per flight
-  const flightCO2Kg = i.flightsYear * 350;
+  const flightCO2Kg = flightsYear * 350;
 
-  const transportTons = (carCO2Kg + transitCO2Kg + flightCO2Kg) / 1000;
+  return (carCO2Kg + transitCO2Kg + flightCO2Kg) / 1000;
+}
 
-  // 2. ENERGY CALCULATION (Annual Tons CO2e per person)
-  // Electricity: monthly spend * 12. Base factor 0.35kg per dollar.
+function calculateEnergyEmissions(electricityBill, energySource, gasBill, householdSize) {
   let energySourceModifier = 1.0;
-  if (i.energySource === 'green-50') energySourceModifier = 0.5;
-  if (i.energySource === 'green-100') energySourceModifier = 0.05;
+  if (energySource === 'green-50') energySourceModifier = 0.5;
+  if (energySource === 'green-100') energySourceModifier = 0.05;
   
-  const annualElectricityCO2 = (i.electricityBill * 12 * 0.35 * energySourceModifier);
+  const annualElectricityCO2 = (electricityBill * 12 * 0.35 * energySourceModifier);
+  const annualGasCO2 = (gasBill * 12 * 0.6);
 
-  // Natural Gas: monthly spend * 12. Factor 0.6kg per dollar.
-  const annualGasCO2 = (i.gasBill * 12 * 0.6);
-
-  // Divide total home emissions by household size
   const totalHomeCO2 = (annualElectricityCO2 + annualGasCO2);
-  const energyTons = (totalHomeCO2 / i.householdSize) / 1000;
+  const size = householdSize || 1;
+  return (totalHomeCO2 / size) / 1000;
+}
 
-  // 3. DIET & LIFESTYLE CALCULATION (Annual Tons CO2e)
-  // Diet base values
-  let dietCO2 = 1.7; // default average
-  if (i.diet === 'heavy-meat') dietCO2 = 2.9;
-  if (i.diet === 'vegetarian') dietCO2 = 1.1;
-  if (i.diet === 'vegan') dietCO2 = 0.65;
+function calculateLifestyleEmissions(diet, waste, shoppingSpend) {
+  let dietCO2 = 1.7;
+  if (diet === 'heavy-meat') dietCO2 = 2.9;
+  if (diet === 'vegetarian') dietCO2 = 1.1;
+  if (diet === 'vegan') dietCO2 = 0.65;
 
-  // Waste values
-  let wasteCO2 = 0.4; // default medium
-  if (i.waste === 'high') wasteCO2 = 0.8;
-  if (i.waste === 'low') wasteCO2 = 0.15;
+  let wasteCO2 = 0.4;
+  if (waste === 'high') wasteCO2 = 0.8;
+  if (waste === 'low') wasteCO2 = 0.15;
 
-  // Non-essential Shopping: annual spend * 0.15kg per dollar
-  const shoppingCO2 = (i.shoppingSpend * 12 * 0.15) / 1000;
+  const shoppingCO2 = (shoppingSpend * 12 * 0.15) / 1000;
 
-  const lifestyleTons = dietCO2 + wasteCO2 + shoppingCO2;
+  return dietCO2 + wasteCO2 + shoppingCO2;
+}
 
-  // 4. TOTAL CO2 CALCULATED
-  const totalCO2 = transportTons + energyTons + lifestyleTons;
+function calculateTotalEmissions(inputs) {
+  const transport = calculateTransportEmissions(inputs.driveMiles, inputs.carType, inputs.transitHours, inputs.flightsYear);
+  const energy = calculateEnergyEmissions(inputs.electricityBill, inputs.energySource, inputs.gasBill, inputs.householdSize);
+  const lifestyle = calculateLifestyleEmissions(inputs.diet, inputs.waste, inputs.shoppingSpend);
+  return {
+    transport,
+    energy,
+    lifestyle,
+    total: transport + energy + lifestyle
+  };
+}
+
+function calculateEmissions() {
+  const result = calculateTotalEmissions(state.inputs);
+  const transportTons = result.transport;
+  const energyTons = result.energy;
+  const lifestyleTons = result.lifestyle;
+  const totalCO2 = result.total;
 
   // Update UI Elements
   document.getElementById('lbl-total-co2').textContent = totalCO2.toFixed(1);
@@ -494,7 +511,7 @@ function renderLedger() {
 
     tr.innerHTML = `
       <td>${formattedDate}</td>
-      <td><strong>${entry.description}</strong></td>
+      <td><strong>${escapeHTML(entry.description)}</strong></td>
       <td><span class="badge-cat ${catBadgeClass}">${entry.category}</span></td>
       <td><span class="offset-value">-${entry.offset.toFixed(1)} kg</span></td>
       <td><span class="points-value">+${entry.points} pts</span></td>
@@ -520,4 +537,31 @@ function deleteLedgerEntry(id, pointsDeduced) {
     saveState();
     renderLedger();
   }
+}
+
+// Escapes HTML tags to prevent DOM-based XSS injection
+function escapeHTML(str) {
+  if (!str) return '';
+  return str.replace(/[&<>'"]/g, 
+    tag => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      "'": '&#39;',
+      '"': '&quot;'
+    }[tag] || tag)
+  );
+}
+
+// ==========================================
+// Exports for Node testing environment
+// ==========================================
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    calculateTransportEmissions,
+    calculateEnergyEmissions,
+    calculateLifestyleEmissions,
+    calculateTotalEmissions,
+    escapeHTML
+  };
 }
