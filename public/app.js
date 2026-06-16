@@ -1,3 +1,5 @@
+"use strict";
+
 // ==========================================
 // EcoPulse Application Logic & State
 // ==========================================
@@ -123,36 +125,45 @@ function injectSvgGradients() {
 // ==========================================
 
 function calculateTransportEmissions(driveMiles, carType, transitHours, flightsYear) {
+  const miles = Math.max(0, parseFloat(driveMiles) || 0);
+  const transit = Math.max(0, parseFloat(transitHours) || 0);
+  const flights = Math.max(0, parseInt(flightsYear) || 0);
+
   let carModifier = 1.0;
   if (carType === 'large-petrol') carModifier = 1.35;
   if (carType === 'hybrid') carModifier = 0.45;
   if (carType === 'electric') carModifier = 0.15;
   
-  const annualCarMiles = driveMiles * 52;
+  const annualCarMiles = miles * 52;
   const carCO2Kg = annualCarMiles * 0.38 * carModifier;
 
-  const annualTransitMiles = transitHours * 25 * 52;
+  const annualTransitMiles = transit * 25 * 52;
   const transitCO2Kg = annualTransitMiles * 0.08;
 
-  const flightCO2Kg = flightsYear * 350;
+  const flightCO2Kg = flights * 350;
 
   return (carCO2Kg + transitCO2Kg + flightCO2Kg) / 1000;
 }
 
 function calculateEnergyEmissions(electricityBill, energySource, gasBill, householdSize) {
+  const electricity = Math.max(0, parseFloat(electricityBill) || 0);
+  const gas = Math.max(0, parseFloat(gasBill) || 0);
+  const size = Math.max(1, parseInt(householdSize) || 1); // Minimum household size is 1
+
   let energySourceModifier = 1.0;
   if (energySource === 'green-50') energySourceModifier = 0.5;
   if (energySource === 'green-100') energySourceModifier = 0.05;
   
-  const annualElectricityCO2 = (electricityBill * 12 * 0.35 * energySourceModifier);
-  const annualGasCO2 = (gasBill * 12 * 0.6);
+  const annualElectricityCO2 = (electricity * 12 * 0.35 * energySourceModifier);
+  const annualGasCO2 = (gas * 12 * 0.6);
 
   const totalHomeCO2 = (annualElectricityCO2 + annualGasCO2);
-  const size = householdSize || 1;
   return (totalHomeCO2 / size) / 1000;
 }
 
 function calculateLifestyleEmissions(diet, waste, shoppingSpend) {
+  const shopping = Math.max(0, parseFloat(shoppingSpend) || 0);
+
   let dietCO2 = 1.7;
   if (diet === 'heavy-meat') dietCO2 = 2.9;
   if (diet === 'vegetarian') dietCO2 = 1.1;
@@ -162,12 +173,13 @@ function calculateLifestyleEmissions(diet, waste, shoppingSpend) {
   if (waste === 'high') wasteCO2 = 0.8;
   if (waste === 'low') wasteCO2 = 0.15;
 
-  const shoppingCO2 = (shoppingSpend * 12 * 0.15) / 1000;
+  const shoppingCO2 = (shopping * 12 * 0.15) / 1000;
 
   return dietCO2 + wasteCO2 + shoppingCO2;
 }
 
 function calculateTotalEmissions(inputs) {
+  if (!inputs) return { transport: 0, energy: 0, lifestyle: 0, total: 0 };
   const transport = calculateTransportEmissions(inputs.driveMiles, inputs.carType, inputs.transitHours, inputs.flightsYear);
   const energy = calculateEnergyEmissions(inputs.electricityBill, inputs.energySource, inputs.gasBill, inputs.householdSize);
   const lifestyle = calculateLifestyleEmissions(inputs.diet, inputs.waste, inputs.shoppingSpend);
@@ -410,16 +422,41 @@ function submitEcoAction() {
   let co2OffsetKg = 0;
 
   if (selectTemplate.value === 'custom') {
-    description = document.getElementById('input-custom-name').value;
+    const customNameEl = document.getElementById('input-custom-name');
+    const customPointsEl = document.getElementById('input-custom-points');
+    const customOffsetEl = document.getElementById('input-custom-offset');
+
+    description = (customNameEl ? customNameEl.value : '').trim();
+    
+    // Strict input validation
+    if (!description) {
+      alert('Please enter a description for your custom action.');
+      return;
+    }
+    if (description.length > 50) {
+      alert('Description must be 50 characters or less.');
+      return;
+    }
+
+    pointsEarned = parseInt(customPointsEl ? customPointsEl.value : '0');
+    if (isNaN(pointsEarned) || pointsEarned < 1 || pointsEarned > 100) {
+      alert('Points must be a valid number between 1 and 100.');
+      return;
+    }
+
+    co2OffsetKg = parseFloat(customOffsetEl ? customOffsetEl.value : '0');
+    if (isNaN(co2OffsetKg) || co2OffsetKg < 0.1 || co2OffsetKg > 100) {
+      alert('CO2 saved must be a valid number between 0.1 and 100 kg.');
+      return;
+    }
+
     category = 'lifestyle';
-    pointsEarned = parseInt(document.getElementById('input-custom-points').value);
-    co2OffsetKg = parseFloat(document.getElementById('input-custom-offset').value);
   } else {
-    description = selectedOption.textContent;
+    description = selectedOption ? selectedOption.textContent : 'Unknown Action';
     category = selectTemplate.value === 'commute' || selectTemplate.value === 'bike' ? 'transit' : 
                selectTemplate.value === 'energy' ? 'energy' : 'lifestyle';
-    pointsEarned = parseInt(selectedOption.getAttribute('data-points'));
-    co2OffsetKg = parseFloat(selectedOption.getAttribute('data-offset'));
+    pointsEarned = parseInt(selectedOption.getAttribute('data-points')) || 0;
+    co2OffsetKg = parseFloat(selectedOption.getAttribute('data-offset')) || 0;
   }
 
   // Create Ledger Item

@@ -21,9 +21,17 @@ test('Carbon Footprint Calculator Engine', async (t) => {
 
     // EV car modifier test (0.15 modifier)
     const evEmissions = calculateTransportEmissions(120, 'electric', 4, 2);
-    // carCO2 = 6240 * 0.38 * 0.15 = 355.68 kg
-    // total = (355.68 + 416 + 700) / 1000 = 1.4717 Tons
     assert.strictEqual(evEmissions.toFixed(4), '1.4717');
+  });
+
+  await t.test('calculateTransportEmissions handles negative and invalid inputs defensively', () => {
+    // Negative values should be clamped to 0
+    const emissionsNegative = calculateTransportEmissions(-100, 'medium-petrol', -10, -5);
+    assert.strictEqual(emissionsNegative, 0);
+
+    // Missing/NaN values should default to 0
+    const emissionsNaN = calculateTransportEmissions(undefined, null, 'invalid-string', {});
+    assert.strictEqual(emissionsNaN, 0);
   });
 
   await t.test('calculateEnergyEmissions splits energy cost by household size', () => {
@@ -36,9 +44,25 @@ test('Carbon Footprint Calculator Engine', async (t) => {
 
     // 100% green energy grid modifier test (0.05 modifier)
     const greenEmissions = calculateEnergyEmissions(80, 'green-100', 50, 2);
-    // electricityCO2 = 80 * 12 * 0.35 * 0.05 = 16.8 kg
-    // total = 376.8 kg. Per person = 188.4 kg = 0.1884 Tons
     assert.strictEqual(greenEmissions.toFixed(4), '0.1884');
+  });
+
+  await t.test('calculateEnergyEmissions handles invalid inputs and zero size defensively', () => {
+    // Household size of 0 should clamp to minimum of 1 to prevent Division by Zero
+    const emissionsZeroSize = calculateEnergyEmissions(100, 'standard', 50, 0);
+    // electricity = 100 * 12 * 0.35 = 420 kg
+    // gas = 50 * 12 * 0.6 = 360 kg
+    // size = 0 clamped to 1. total = (420 + 360) / 1 / 1000 = 0.78 Tons
+    assert.strictEqual(emissionsZeroSize.toFixed(2), '0.78');
+
+    // Negative inputs should clamp to 0
+    const emissionsNegative = calculateEnergyEmissions(-80, 'standard', -50, -2);
+    // bills clamp to 0. size clamps to 1. total = 0 Tons
+    assert.strictEqual(emissionsNegative, 0);
+
+    // Null/undefined checks
+    const emissionsNull = calculateEnergyEmissions(null, null, undefined, null);
+    assert.strictEqual(emissionsNull, 0);
   });
 
   await t.test('calculateLifestyleEmissions computes diet and waste impacts', () => {
@@ -48,6 +72,13 @@ test('Carbon Footprint Calculator Engine', async (t) => {
     // shopping = 150 * 12 * 0.15 / 1000 = 0.27 Tons
     // total = 1.1 + 0.15 + 0.27 = 1.52 Tons
     assert.strictEqual(emissions.toFixed(2), '1.52');
+  });
+
+  await t.test('calculateLifestyleEmissions handles invalid/negative shopping spends', () => {
+    const emissionsNegative = calculateLifestyleEmissions('vegan', 'low', -500);
+    // diet = 0.65, waste = 0.15, shopping clamps to 0
+    // total = 0.65 + 0.15 + 0 = 0.80 Tons
+    assert.strictEqual(emissionsNegative.toFixed(2), '0.80');
   });
 
   await t.test('calculateTotalEmissions aggregates correctly', () => {
@@ -69,6 +100,12 @@ test('Carbon Footprint Calculator Engine', async (t) => {
     assert.strictEqual(result.energy.toFixed(3), '0.348');
     assert.strictEqual(result.lifestyle.toFixed(2), '2.37'); // 1.7 + 0.4 + 0.27 = 2.37
     assert.strictEqual(result.total.toFixed(4), '6.2052');
+  });
+
+  await t.test('calculateTotalEmissions handles null/undefined input state object', () => {
+    const result = calculateTotalEmissions(null);
+    assert.strictEqual(result.total, 0);
+    assert.strictEqual(result.transport, 0);
   });
 
   await t.test('escapeHTML prevents script injections', () => {
