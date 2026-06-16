@@ -323,6 +323,13 @@ function setupEventListeners() {
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('input-action-date').value = today;
     
+    // Clear validation error message
+    const errorEl = document.getElementById('modal-error-msg');
+    if (errorEl) {
+      errorEl.textContent = '';
+      errorEl.style.display = 'none';
+    }
+
     modal.classList.add('active');
   });
 
@@ -330,6 +337,13 @@ function setupEventListeners() {
     modal.classList.remove('active');
     formAction.reset();
     customFields.style.display = 'none';
+    
+    // Clear validation error message
+    const errorEl = document.getElementById('modal-error-msg');
+    if (errorEl) {
+      errorEl.textContent = '';
+      errorEl.style.display = 'none';
+    }
   });
 
   // Toggle Custom fields in form when Custom template is chosen
@@ -430,23 +444,23 @@ function submitEcoAction() {
     
     // Strict input validation
     if (!description) {
-      alert('Please enter a description for your custom action.');
+      showModalError('Please enter a description for your custom action.');
       return;
     }
     if (description.length > 50) {
-      alert('Description must be 50 characters or less.');
+      showModalError('Description must be 50 characters or less.');
       return;
     }
 
     pointsEarned = parseInt(customPointsEl ? customPointsEl.value : '0');
     if (isNaN(pointsEarned) || pointsEarned < 1 || pointsEarned > 100) {
-      alert('Points must be a valid number between 1 and 100.');
+      showModalError('Points must be a valid number between 1 and 100.');
       return;
     }
 
     co2OffsetKg = parseFloat(customOffsetEl ? customOffsetEl.value : '0');
     if (isNaN(co2OffsetKg) || co2OffsetKg < 0.1 || co2OffsetKg > 100) {
-      alert('CO2 saved must be a valid number between 0.1 and 100 kg.');
+      showModalError('CO2 saved must be a valid number between 0.1 and 100 kg.');
       return;
     }
 
@@ -577,6 +591,18 @@ function deleteLedgerEntry(id, pointsDeduced) {
 }
 
 // Escapes HTML tags to prevent DOM-based XSS injection
+// Displays non-blocking validation errors in the modal dialog
+function showModalError(msg) {
+  if (typeof document !== 'undefined') {
+    const errorEl = document.getElementById('modal-error-msg');
+    if (errorEl) {
+      errorEl.textContent = msg;
+      errorEl.style.display = 'block';
+    }
+  }
+}
+
+// Escapes HTML tags to prevent DOM-based XSS injection
 function escapeHTML(str) {
   if (!str) return '';
   return str.replace(/[&<>'"]/g, 
@@ -599,6 +625,7 @@ if (typeof module !== 'undefined' && module.exports) {
     calculateEnergyEmissions,
     calculateLifestyleEmissions,
     calculateTotalEmissions,
-    escapeHTML
+    escapeHTML,
+    showModalError
   };
 }
